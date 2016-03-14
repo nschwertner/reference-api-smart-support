@@ -21,7 +21,9 @@
 package org.hspconsortium.platform.api.fhir.repository;
 
 import ca.uhn.fhir.model.api.ExtensionDt;
+import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.resource.Conformance;
+import ca.uhn.fhir.model.dstu2.valueset.RestfulSecurityServiceEnum;
 import ca.uhn.fhir.model.primitive.UriDt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -55,6 +57,12 @@ public class ConfiguredMetadataRepository implements MetadataRepository {
         conformanceExtension.addUndeclaredExtension(new ExtensionDt(false, "register", new UriDt( this.registrationEndpointUri)));
 
         restSecurity.addUndeclaredExtension(conformanceExtension);
+
+        BoundCodeableConceptDt<RestfulSecurityServiceEnum> boundCodeableConceptDt =
+                new BoundCodeableConceptDt<>(
+                        RestfulSecurityServiceEnum.VALUESET_BINDER, RestfulSecurityServiceEnum.SMART_ON_FHIR);
+        boundCodeableConceptDt.setText("OAuth2 using SMART-on-FHIR profile (see http://docs.smarthealthit.org)");
+        restSecurity.getService().add(boundCodeableConceptDt);
 
         return conformance;
     }
