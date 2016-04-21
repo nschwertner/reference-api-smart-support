@@ -33,6 +33,11 @@ import java.util.List;
 @Component
 public class ConfiguredMetadataRepository implements MetadataRepository {
 
+    static public String SECURE_MODE = "secured";
+
+    @Value("${hspc.platform.api.security.mode}")
+    private String securityMode;
+
     @Value("${hspc.platform.authorization.tokenUrl}")
     private String tokenEndpointUri;
 
@@ -47,22 +52,24 @@ public class ConfiguredMetadataRepository implements MetadataRepository {
 
     public Conformance addConformance(Conformance conformance){
 
-        List<Conformance.Rest> restList = conformance.getRest();
-        Conformance.Rest rest = restList.get(0);
-        Conformance.RestSecurity restSecurity = rest.getSecurity();
+        if (SECURE_MODE.equalsIgnoreCase(securityMode)) {
+            List<Conformance.Rest> restList = conformance.getRest();
+            Conformance.Rest rest = restList.get(0);
+            Conformance.RestSecurity restSecurity = rest.getSecurity();
 
-        ExtensionDt conformanceExtension = new ExtensionDt(false, this.urisEndpointExtensionUrl);
-        conformanceExtension.addUndeclaredExtension(new ExtensionDt(false, "authorize", new UriDt( this.authorizationEndpointUri)));
-        conformanceExtension.addUndeclaredExtension(new ExtensionDt(false, "token", new UriDt( this.tokenEndpointUri)));
-        conformanceExtension.addUndeclaredExtension(new ExtensionDt(false, "register", new UriDt( this.registrationEndpointUri)));
+            ExtensionDt conformanceExtension = new ExtensionDt(false, this.urisEndpointExtensionUrl);
+            conformanceExtension.addUndeclaredExtension(new ExtensionDt(false, "authorize", new UriDt(this.authorizationEndpointUri)));
+            conformanceExtension.addUndeclaredExtension(new ExtensionDt(false, "token", new UriDt(this.tokenEndpointUri)));
+            conformanceExtension.addUndeclaredExtension(new ExtensionDt(false, "register", new UriDt(this.registrationEndpointUri)));
 
-        restSecurity.addUndeclaredExtension(conformanceExtension);
+            restSecurity.addUndeclaredExtension(conformanceExtension);
 
-        BoundCodeableConceptDt<RestfulSecurityServiceEnum> boundCodeableConceptDt =
-                new BoundCodeableConceptDt<>(
-                        RestfulSecurityServiceEnum.VALUESET_BINDER, RestfulSecurityServiceEnum.SMART_ON_FHIR);
-        boundCodeableConceptDt.setText("OAuth2 using SMART-on-FHIR profile (see http://docs.smarthealthit.org)");
-        restSecurity.getService().add(boundCodeableConceptDt);
+            BoundCodeableConceptDt<RestfulSecurityServiceEnum> boundCodeableConceptDt =
+                    new BoundCodeableConceptDt<>(
+                            RestfulSecurityServiceEnum.VALUESET_BINDER, RestfulSecurityServiceEnum.SMART_ON_FHIR);
+            boundCodeableConceptDt.setText("OAuth2 using SMART-on-FHIR profile (see http://docs.smarthealthit.org)");
+            restSecurity.getService().add(boundCodeableConceptDt);
+        }
 
         return conformance;
     }
