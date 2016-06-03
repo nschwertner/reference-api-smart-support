@@ -23,7 +23,6 @@ package org.hspconsortium.platform.api.smart;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -31,18 +30,15 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-@RestController
+@Component
 public class LaunchOrchestrationEndpoint {
 
     @Value("${hspc.platform.authorization.smart.launchUrl}")
@@ -54,12 +50,10 @@ public class LaunchOrchestrationEndpoint {
     @Value("${hspc.platform.api.oauth2.clientSecret}")
     private String apiServerClientSecret;
 
-    @RequestMapping(value = "/Launch", method = RequestMethod.GET)
     public String hello(HttpServletRequest request, HttpServletResponse response) {
         return "Welcome to the SMART Launch endpoint!";
     }
 
-    @RequestMapping(value = "/Launch", method = RequestMethod.POST)
     public void handleLaunchRequest(HttpServletRequest request, HttpServletResponse response, @RequestBody String jsonString) {
         HttpPost postRequest = new HttpPost(this.authorizationServerLaunchEndpointURL);
         postRequest.addHeader("Content-Type", "application/json");
@@ -86,8 +80,6 @@ public class LaunchOrchestrationEndpoint {
             }
             response.setHeader("Content-Type", "application/json;charset=utf-8");
             response.getWriter().write(EntityUtils.toString(closeableHttpResponse.getEntity()));
-        } catch (ClientProtocolException cpe_ex) {
-            throw new RuntimeException(cpe_ex);
         } catch (IOException io_ex) {
             throw new RuntimeException(io_ex);
         }
